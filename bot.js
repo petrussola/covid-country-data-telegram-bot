@@ -10,7 +10,16 @@ const { countries } = require('./data/countries');
 const token = process.env.TELEGRAM_TOKEN;
 const baseApi = process.env.BASE_API;
 
-const bot = new TelegramBot(token, { polling: true });
+let bot;
+
+if (process.env.NODE_ENV === 'production') {
+	bot = new TelegramBot(token);
+	bot.setWebHook(process.env.HEROKU_URL + bot.token);
+} else {
+	bot = new TelegramBot(token, { polling: true });
+}
+
+console.log(`Bot started in the ${process.env.NODE_ENV} mode`);
 
 bot.on('message', async (msg) => {
 	commands = ['/start', '/help'];
