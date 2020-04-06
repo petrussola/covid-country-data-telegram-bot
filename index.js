@@ -13,6 +13,7 @@ app.get('/', (req, res) => {
 	res.status(200).json({ message: 'Hello from the Bot API.' });
 });
 app.post(`/${process.env.token}`, (req, res) => {
+	console.log(req.body)
 	bot.processUpdate(req.body);
 	res.sendStatus(200);
 });
