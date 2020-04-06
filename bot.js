@@ -22,7 +22,9 @@ if (process.env.NODE_ENV === 'production') {
 console.log(`Bot started in the ${process.env.NODE_ENV} mode`);
 
 bot.on('message', async (msg) => {
+	console.log('########')
 	console.log(msg)
+	console.log('########')
 	commands = ['/start', '/help'];
 	const input = msg.text;
 	// is user types /start or /help
