@@ -13,7 +13,7 @@ app.get('/', (req, res) => {
 	res.status(200).json({ message: 'Hello from the Bot API.' });
 });
 app.post(`/${process.env.TELEGRAM_TOKEN}`, (req, res) => {
-	console.log(req.body);
+	// console.log(req.body);
 	bot.processUpdate(req.body);
 	res.status(200).json({ message: 'ok' });
 });
