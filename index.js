@@ -10,12 +10,15 @@ const { countries } = require('./data/countries');
 const token = process.env.TELEGRAM_TOKEN;
 const baseApi = process.env.BASE_API;
 
-const bot = new TelegramBot(token, { polling: true });
+const port = process.env.port || 5000;
+const host = process.env.host;
+
+const bot = new TelegramBot(token, { webHook: { port: port, host: host } });
 
 bot.on('message', async (msg) => {
 	commands = ['/start', '/help'];
-    const input = msg.text;
-    // is user types /start or /help
+	const input = msg.text;
+	// is user types /start or /help
 	if (commands.includes(input)) {
 		bot.sendMessage(
 			msg.chat.id,
