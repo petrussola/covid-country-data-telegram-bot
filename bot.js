@@ -12,19 +12,26 @@ const baseApi = process.env.BASE_API;
 
 let bot;
 
+// if production env, we use webhooks
+// https://core.telegram.org/bots/api#setwebhook
+// https://github.com/yagop/node-telegram-bot-api/blob/release/doc/api.md#TelegramBot+setWebHook
 if (process.env.NODE_ENV === 'production') {
 	bot = new TelegramBot(token);
 	bot.setWebHook(process.env.HEROKU_URL + bot.token);
 } else {
+	// otherwise, we use polling
+	// differences between webhooks and polling: 
+	// https://core.telegram.org/bots/webhooks
+	// https://stackoverflow.com/questions/40033150/telegram-bot-getupdates-vs-setwebhook
 	bot = new TelegramBot(token, { polling: true });
 }
 
 console.log(`Bot started in the ${process.env.NODE_ENV} mode`);
 
 bot.on('message', async (msg) => {
-	console.log('########')
-	console.log(msg)
-	console.log('########')
+	console.log('########');
+	console.log(msg);
+	console.log('########');
 	commands = ['/start', '/help'];
 	const input = msg.text;
 	// is user types /start or /help
