@@ -20,7 +20,7 @@ if (process.env.NODE_ENV === 'production') {
 	bot.setWebHook(process.env.HEROKU_URL + bot.token);
 } else {
 	// otherwise, we use polling
-	// differences between webhooks and polling: 
+	// differences between webhooks and polling:
 	// https://core.telegram.org/bots/webhooks
 	// https://stackoverflow.com/questions/40033150/telegram-bot-getupdates-vs-setwebhook
 	bot = new TelegramBot(token, { polling: true });
@@ -38,80 +38,112 @@ bot.on('message', async (msg) => {
 	if (commands.includes(input)) {
 		bot.sendMessage(
 			msg.chat.id,
-			'Welcome! Please type an ISO country code to get the latest COVID-19 official data i.e. Ireland => IE, France => FR, etc'
+			`Welcome!\n
+			- Type an ISO country code to get the latest COVID-19 official data i.e. Ireland => <b>ie</b>, France => <b>fr</b>, etc\n
+			- Type <b>world</b> to get the latest global data`,
+			{ parse_mode: 'HTML' }
 		);
 	} else {
 		const countryCode = msg.text;
-		country = countries.filter((item) => {
-			return item['ISO2'] === countryCode.toUpperCase();
-		});
-		// if message sent does not match a country, return error message
-		if (country.length === 0) {
-			bot.sendMessage(
-				msg.chat.id,
-				"The text you wrote doesn't seem to match an ISO country code. Please try another one."
-			);
-		} else {
-			countryName = country[0]['Country'];
+		// world data
+		if (countryCode.toUpperCase() === 'WORLD' || countryCode.toUpperCase() === 'GLOBAL') {
 			try {
-				// data from API
-				confirmed = await axios.get(
-					`${baseApi}${countryName}/status/confirmed`
-				);
-				confirmedData = confirmed.data;
-				recovered = await axios.get(
-					`${baseApi}${countryName}/status/recovered`
-				);
-				recoveredData = recovered.data;
-				death = await axios.get(`${baseApi}${countryName}/status/deaths`);
-				deathData = death.data;
-				// last and before last available data index
-				lastDateIndex = confirmedData.length - 1;
-				beforeLastDateIndex = confirmedData.length - 2;
-				// we get the latest date available
-				lastYear = confirmedData[confirmedData.length - 1]['Date'].substring(
-					0,
-					4
-				);
-				lastMonth = confirmedData[confirmedData.length - 1]['Date'].substring(
-					5,
-					7
-				);
-				lastDay = confirmedData[confirmedData.length - 1]['Date'].substring(
-					8,
-					10
-				);
-				diffConfirmed =
-					confirmedData[lastDateIndex]['Cases'] -
-					confirmedData[beforeLastDateIndex]['Cases'];
-				diffRecovered =
-					recoveredData[lastDateIndex]['Cases'] -
-					recoveredData[beforeLastDateIndex]['Cases'];
-				diffDeaths =
-					deathData[lastDateIndex]['Cases'] -
-					deathData[beforeLastDateIndex]['Cases'];
+				data = await axios.get(`${baseApi}/summary`);
+				globalData = data.data.Global;
 				bot.sendMessage(
 					msg.chat.id,
-					`Last data available for <b>${countryName}</b> is for <b>${lastDay}-${lastMonth}-${lastYear}</b>.\n\nConfirmed: ${confirmedData[
-						lastDateIndex
-					]['Cases'].toLocaleString()} cases [${
-						diffConfirmed > 0 ? '+' : '-'
-					}${diffConfirmed.toLocaleString()} new].\nRecovered: ${recoveredData[
-						lastDateIndex
-					]['Cases'].toLocaleString()} cases [${
-						diffRecovered > 0 ? '+' : '-'
-					}${diffRecovered.toLocaleString()} new].\nDeaths: ${deathData[
-						lastDateIndex
-					]['Cases'].toLocaleString()} cases [${
-						diffDeaths > 0 ? '+' : '-'
-					}${diffDeaths.toLocaleString()} new].\n\nData source: Johns Hopkins University Center for Systems Science and Engineering.`,
+					`Last <b>global</b> data available.\n\nConfirmed: ${globalData[
+						'TotalConfirmed'
+					].toLocaleString()} cases [${globalData[
+						'NewConfirmed'
+					].toLocaleString()} new].\nRecovered: ${globalData[
+						'TotalRecovered'
+					].toLocaleString()} cases [${globalData[
+						'NewRecovered'
+					].toLocaleString()} new].\nDeaths: ${globalData[
+						'TotalDeaths'
+					].toLocaleString()} cases [${globalData[
+						'NewDeaths'
+					].toLocaleString()} new].\n\nData source: Johns Hopkins University Center for Systems Science and Engineering.`,
 					{ parse_mode: 'HTML' }
 				);
-			} catch (error) {
+				console.log(globalData);
+			} catch (error) {}
+		} else {
+			country = countries.filter((item) => {
+				return item['ISO2'] === countryCode.toUpperCase();
+			});
+			// if message sent does not match a country, return error message
+			if (country.length === 0) {
 				bot.sendMessage(
 					msg.chat.id,
-					'We could not fetch the data requested. Please try again.'
+					"The text you wrote doesn't seem to match an ISO country code. Please try another one."
 				);
+			} else {
+				countryName = country[0]['Country'];
+				try {
+					// data from API
+					// https://documenter.getpostman.com/view/10808728/SzS8rjbc?version=latest#9739c95f-ef1d-489b-97a9-0a6dfe2f74d8
+					confirmed = await axios.get(
+						`${baseApi}total/country/${countryName}/status/confirmed`
+					);
+					confirmedData = confirmed.data;
+					recovered = await axios.get(
+						`${baseApi}total/country/${countryName}/status/recovered`
+					);
+					recoveredData = recovered.data;
+					death = await axios.get(
+						`${baseApi}total/country/${countryName}/status/deaths`
+					);
+					deathData = death.data;
+					// last and before last available data index
+					lastDateIndex = confirmedData.length - 1;
+					beforeLastDateIndex = confirmedData.length - 2;
+					// we get the latest date available
+					lastYear = confirmedData[confirmedData.length - 1]['Date'].substring(
+						0,
+						4
+					);
+					lastMonth = confirmedData[confirmedData.length - 1]['Date'].substring(
+						5,
+						7
+					);
+					lastDay = confirmedData[confirmedData.length - 1]['Date'].substring(
+						8,
+						10
+					);
+					diffConfirmed =
+						confirmedData[lastDateIndex]['Cases'] -
+						confirmedData[beforeLastDateIndex]['Cases'];
+					diffRecovered =
+						recoveredData[lastDateIndex]['Cases'] -
+						recoveredData[beforeLastDateIndex]['Cases'];
+					diffDeaths =
+						deathData[lastDateIndex]['Cases'] -
+						deathData[beforeLastDateIndex]['Cases'];
+					bot.sendMessage(
+						msg.chat.id,
+						`Last data available for <b>${countryName}</b> is for <b>${lastDay}-${lastMonth}-${lastYear}</b>.\n\nConfirmed: ${confirmedData[
+							lastDateIndex
+						]['Cases'].toLocaleString()} cases [${
+							diffConfirmed > 0 ? '+' : '-'
+						}${diffConfirmed.toLocaleString()} new].\nRecovered: ${recoveredData[
+							lastDateIndex
+						]['Cases'].toLocaleString()} cases [${
+							diffRecovered > 0 ? '+' : '-'
+						}${diffRecovered.toLocaleString()} new].\nDeaths: ${deathData[
+							lastDateIndex
+						]['Cases'].toLocaleString()} cases [${
+							diffDeaths > 0 ? '+' : '-'
+						}${diffDeaths.toLocaleString()} new].\n\nData source: Johns Hopkins University Center for Systems Science and Engineering.`,
+						{ parse_mode: 'HTML' }
+					);
+				} catch (error) {
+					bot.sendMessage(
+						msg.chat.id,
+						'We could not fetch the data requested. Please try again.'
+					);
+				}
 			}
 		}
 	}
