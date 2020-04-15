@@ -2,6 +2,12 @@
 const TelegramBot = require('node-telegram-bot-api');
 require('dotenv').config();
 const axios = require('axios');
+const fs = require('fs');
+// CHARTING
+const chartExporter = require('highcharts-export-server');
+// const Annotations = require('highcharts/modules/annotations');
+// const Highcharts = require('highcharts'),
+// 	HighchartsAnnotations = require('annotations')(Highcharts);
 
 // data
 const { countries } = require('./data/countries');
@@ -11,6 +17,9 @@ const token = process.env.TELEGRAM_TOKEN;
 const baseApi = process.env.BASE_API;
 
 let bot;
+
+// initialize the chart exporter
+chartExporter.initPool();
 
 // if production env, we use webhooks
 // https://core.telegram.org/bots/api#setwebhook
@@ -43,10 +52,34 @@ bot.on('message', async (msg) => {
 			- Type <b>world</b> to get the latest global data`,
 			{ parse_mode: 'HTML' }
 		);
+		// test file
+	} else if (input === 'file') {
+		bot.sendPhoto(msg.chat.id, './bar.png');
+		// chartExporter.export(chartDetails, function (err, res) {
+		// 	console.log(res);
+		// 	//The export result is now in res.
+		// 	//If the output is not PDF or SVG, it will be base64 encoded (res.data).
+		// 	const image64 = res.data;
+		// 	//If the output is a PDF or SVG, it will contain a filename (res.filename).
+		// 	const outputFile = 'bar.png';
+
+		// 	fs.writeFileSync(outputFile, image64, 'base64', (err) => {
+		// 		if (err) {
+		// 			console.log(err);
+		// 		}
+		// 	});
+		// 	const filetest = `${__dirname}/bar.png`;
+		// 	//Kill the pool when we're done with it, and exit the application
+		// 	chartExporter.killPool();
+		// 	// process.exit(1);
+		// });
 	} else {
 		const countryCode = msg.text;
 		// world data
-		if (countryCode.toUpperCase() === 'WORLD' || countryCode.toUpperCase() === 'GLOBAL') {
+		if (
+			countryCode.toUpperCase() === 'WORLD' ||
+			countryCode.toUpperCase() === 'GLOBAL'
+		) {
 			try {
 				data = await axios.get(`${baseApi}/summary`);
 				globalData = data.data.Global;
@@ -138,6 +171,77 @@ bot.on('message', async (msg) => {
 						}${diffDeaths.toLocaleString()} new].\n\nData source: Johns Hopkins University Center for Systems Science and Engineering.`,
 						{ parse_mode: 'HTML' }
 					);
+					// charting
+					const dates = [];
+					const newConfirmed = [];
+					for (index in confirmedData) {
+						if (confirmedData[index]['Cases'] !== 0) {
+							if (index === '0') {
+								dates.push(confirmedData[index]['Date'].substring(0, 10));
+								newConfirmed.push(0);
+							} else {
+								dates.push(confirmedData[index]['Date'].substring(0, 10));
+								newConfirmed.push(
+									confirmedData[index]['Cases'] -
+										confirmedData[index - 1]['Cases']
+								);
+							}
+						}
+					}
+					console.log(dates);
+					console.log(newConfirmed);
+					// chart details
+					const chartDetails = {
+						type: 'png',
+						options: {
+							title: {
+								text: `New Daily Confirmed Cases - ${countryName}`,
+							},
+							xAxis: {
+								categories: dates,
+							},
+							series: [
+								{
+									type: 'line',
+									data: newConfirmed,
+								},
+							],
+							annotations: [
+								{
+									labels: [
+										{
+											point: 'max',
+											text: 'Max',
+										},
+										{
+											point: 'min',
+											text: 'Min',
+											backgroundColor: 'white',
+										},
+									],
+								},
+							],
+						},
+					};
+					chartExporter.export(chartDetails, function (err, res) {
+						console.log(res);
+						//The export result is now in res.
+						//If the output is not PDF or SVG, it will be base64 encoded (res.data).
+						const image64 = res.data;
+						//If the output is a PDF or SVG, it will contain a filename (res.filename).
+						const outputFile = 'bar.png';
+
+						fs.writeFileSync(outputFile, image64, 'base64', (err) => {
+							if (err) {
+								console.log(err);
+							}
+						});
+						const filetest = `${__dirname}/bar.png`;
+						bot.sendPhoto(msg.chat.id, './bar.png');
+						//Kill the pool when we're done with it, and exit the application
+						chartExporter.killPool();
+						// process.exit(1);
+					});
 				} catch (error) {
 					bot.sendMessage(
 						msg.chat.id,
