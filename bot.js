@@ -206,21 +206,9 @@ bot.on('message', async (msg) => {
 									data: newConfirmed,
 								},
 							],
-							annotations: [
-								{
-									labels: [
-										{
-											point: 'max',
-											text: 'Max',
-										},
-										{
-											point: 'min',
-											text: 'Min',
-											backgroundColor: 'white',
-										},
-									],
-								},
-							],
+							legend: {
+								enabled: false,
+							},
 						},
 					};
 					chartExporter.export(chartDetails, function (err, res) {
