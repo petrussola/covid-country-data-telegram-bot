@@ -224,7 +224,7 @@ bot.on('message', async (msg) => {
 						},
 					};
 					chartExporter.export(chartDetails, function (err, res) {
-						console.log(res);
+						// console.log(res);
 						//The export result is now in res.
 						//If the output is not PDF or SVG, it will be base64 encoded (res.data).
 						const image64 = res.data;
