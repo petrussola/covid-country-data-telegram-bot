@@ -20,6 +20,7 @@ let bot;
 
 // initialize the chart exporter
 chartExporter.initPool();
+let count = 0
 
 // if production env, we use webhooks
 // https://core.telegram.org/bots/api#setwebhook
@@ -197,6 +198,11 @@ bot.on('message', async (msg) => {
 							title: {
 								text: `New Daily Confirmed Cases - ${countryName}`,
 							},
+							yAxis: {
+								title: {
+									text: 'New Daily Confirmed Cases',
+								},
+							},
 							xAxis: {
 								categories: dates,
 							},
@@ -217,15 +223,16 @@ bot.on('message', async (msg) => {
 						//If the output is not PDF or SVG, it will be base64 encoded (res.data).
 						const image64 = res.data;
 						//If the output is a PDF or SVG, it will contain a filename (res.filename).
-						const outputFile = 'bar.png';
+						const outputFile = `${__dirname}/charts/graph${count}.png`;
 
 						fs.writeFileSync(outputFile, image64, 'base64', (err) => {
 							if (err) {
 								console.log(err);
 							}
 						});
-						const filetest = `${__dirname}/bar.png`;
-						bot.sendPhoto(msg.chat.id, './bar.png');
+						const fileToBeSent = `${__dirname}/charts/graph${count}.png`;
+						count++
+						bot.sendPhoto(msg.chat.id, fileToBeSent);
 						//Kill the pool when we're done with it, and exit the application
 						chartExporter.killPool();
 						// process.exit(1);
