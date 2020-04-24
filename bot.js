@@ -231,8 +231,9 @@ bot.on('message', async (msg) => {
 								console.log(err);
 							}
 						});
-						const fileToBeSent = `${__dirname}/charts/graph${count}.png`;
+						const fileToBeSent = `${__dirname}/charts/graph2.png`;
 						count++
+						console.log(`***** count is: ${count} *******`)
 						bot.sendPhoto(msg.chat.id, fileToBeSent);
 						//Kill the pool when we're done with it, and exit the application
 						chartExporter.killPool();
