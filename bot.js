@@ -3,12 +3,15 @@ const TelegramBot = require('node-telegram-bot-api');
 require('dotenv').config();
 const axios = require('axios');
 const fs = require('fs');
-const AWS = require('aws-sdk');
+
 // CHARTING
 const chartExporter = require('highcharts-export-server');
 // const Annotations = require('highcharts/modules/annotations');
 // const Highcharts = require('highcharts'),
 // 	HighchartsAnnotations = require('annotations')(Highcharts);
+
+// HELPERS
+const uploadFile = require('./config/aws');
 
 // data
 const { countries } = require('./data/countries');
@@ -22,34 +25,6 @@ let bot;
 // initialize the chart exporter
 chartExporter.initPool();
 let count = 0;
-
-// AWS
-
-// AWS variables
-const awsAccessKey = process.env.AWS_ACCESS_KEY_ID;
-const awsSecretKey = process.env.AWS_SECRET_KEY;
-const awsBucketName = process.env.AWS_BUCKET_NAME;
-
-const s3 = new AWS.S3({
-	accessKeyId: awsAccessKey,
-	secretAccessKey: awsSecretKey,
-});
-// AWS file uploader
-const uploadFile = (file) => {
-	const params = {
-		Bucket: awsBucketName,
-		Key: 'graph.png',
-		Body: file,
-		ContentType: 'image/png',
-	};
-
-	s3.upload(params, function (err, data) {
-		if (err) {
-			throw err;
-		}
-		console.log(`File uploaded successfully. ${data.Location}`);
-	});
-};
 
 // if production env, we use webhooks
 // https://core.telegram.org/bots/api#setwebhook
@@ -261,10 +236,11 @@ bot.on('message', async (msg) => {
 						// 		console.log(err);
 						// 	}
 						// });
-						uploadFile(image64);
 						// --------------
-						const fileToBeSent = `${__dirname}/charts/graph2.png`;
+						// console.log(image64);
+						uploadFile(image64, count);
 						count++;
+						const fileToBeSent = `${__dirname}/charts/graph0.png`;
 						console.log(`***** count is: ${count} *******`);
 						bot.sendPhoto(msg.chat.id, fileToBeSent);
 						//Kill the pool when we're done with it, and exit the application
