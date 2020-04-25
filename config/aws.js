@@ -12,23 +12,27 @@ const s3 = new AWS.S3({
 	secretAccessKey: awsSecretKey,
 });
 // AWS file uploader
-const uploadFile = (file, count) => {
-    const base64Data = new Buffer.from(file.replace(/^data:image\/\w+;base64,/, ""), 'base64');
+const uploadFile = async (file, count) => {
+	const base64Data = new Buffer.from(
+		file.replace(/^data:image\/\w+;base64,/, ''),
+		'base64'
+	);
 	const params = {
 		Bucket: awsBucketName,
 		Key: `graph${count}`,
-        Body: base64Data,
-        ACL: 'public-read',
+		Body: base64Data,
+		ACL: 'public-read',
 		ContentEncoding: 'base64',
 		ContentType: `image/png`,
 	};
-
-	s3.upload(params, function (err, data) {
-		if (err) {
-			throw err;
-		}
-		console.log(`File uploaded successfully. ${data.Location}`);
-	});
+	try {
+		const { Location } = await s3.upload(params).promise();
+		location = Location;
+		console.log(`File uploaded successfully. ${location}`);
+	} catch (error) {
+		throw error;
+	}
+	return location;
 };
 
 module.exports = uploadFile;

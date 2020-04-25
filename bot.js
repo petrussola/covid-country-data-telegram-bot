@@ -222,7 +222,7 @@ bot.on('message', async (msg) => {
 							},
 						},
 					};
-					chartExporter.export(chartDetails, function (err, res) {
+					chartExporter.export(chartDetails, async function (err, res) {
 						// console.log(res);
 						//The export result is now in res.
 						//If the output is not PDF or SVG, it will be base64 encoded (res.data).
@@ -238,14 +238,18 @@ bot.on('message', async (msg) => {
 						// });
 						// --------------
 						// console.log(image64);
-						uploadFile(image64, count);
-						count++;
-						const fileToBeSent = `${__dirname}/charts/graph0.png`;
-						console.log(`***** count is: ${count} *******`);
-						bot.sendPhoto(msg.chat.id, fileToBeSent);
-						//Kill the pool when we're done with it, and exit the application
-						chartExporter.killPool();
-						// process.exit(1);
+						try {
+							const location = await uploadFile(image64, count);
+							count++;
+							console.log(`***** count is: ${count} *******`);
+							console.log(location)
+							bot.sendPhoto(msg.chat.id, location);
+							//Kill the pool when we're done with it, and exit the application
+							chartExporter.killPool();
+							// process.exit(1);
+						} catch (error) {
+							console.log(error);
+						}
 					});
 				} catch (error) {
 					bot.sendMessage(
