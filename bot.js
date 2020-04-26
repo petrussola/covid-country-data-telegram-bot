@@ -240,10 +240,10 @@ bot.on('message', async (msg) => {
 						// console.log(image64);
 						try {
 							const date = `${lastDay}${lastMonth}${lastYear}`
-							const location = await uploadFile(image64, count, countryName, date);
+							const etag = await uploadFile(image64, count, countryName, date);
 							count++;
 							console.log(`***** count is: ${count} *******`);
-							console.log(location)
+							console.log(etag)
 							bot.sendPhoto(msg.chat.id, location);
 							//Kill the pool when we're done with it, and exit the application
 							chartExporter.killPool();

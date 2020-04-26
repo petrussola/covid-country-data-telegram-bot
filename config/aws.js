@@ -26,13 +26,13 @@ const uploadFile = async (file, count, country, date) => {
 		Metadata: { 'x-amz-meta-country': country, 'x-amz-meta-date': date },
 	};
 	try {
-		const result = await s3.putObject(params).promise();
-		location = Location;
-		console.log(`File uploaded successfully. ${location}`);
+		const { Etag } = await s3.putObject(params).promise();
+		etag = Etag;
+		console.log(`File uploaded successfully. Etag: ${etag}`);
 	} catch (error) {
 		throw error;
 	}
-	return location;
+	return etag;
 };
 
 module.exports = uploadFile;
