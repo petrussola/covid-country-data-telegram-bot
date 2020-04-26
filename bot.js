@@ -239,7 +239,8 @@ bot.on('message', async (msg) => {
 						// --------------
 						// console.log(image64);
 						try {
-							const location = await uploadFile(image64, count);
+							const date = `${lastDay}${lastMonth}${lastYear}`
+							const location = await uploadFile(image64, count, countryName, date);
 							count++;
 							console.log(`***** count is: ${count} *******`);
 							console.log(location)
