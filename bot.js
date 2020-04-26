@@ -246,21 +246,29 @@ bot.on('message', async (msg) => {
 						// --------------
 						// console.log(image64);
 
-						try {
-							const date = `${lastDay}${lastMonth}${lastYear}`;
-							const etag = await uploadFile(image64, count, countryName.toLowerCase(), date);
-							count++;
-							console.log(`***** count is: ${count} *******`);
-							console.log(etag);
-							let url = `${awsBucketBaseURL}${date}${countryName.toLowerCase()}`;
-							console.log(url);
-							bot.sendPhoto(msg.chat.id, url);
-							//Kill the pool when we're done with it, and exit the application
-							chartExporter.killPool();
-							// process.exit(1);
-						} catch (error) {
-							console.log(error);
-						}
+						const date = `${lastYear}${lastMonth}${lastDay}`;
+						const countryLower = countryName.toLowerCase();
+						if (!cache[`${date}${countryLower}`]) {
+							try {
+								const etag = await uploadFile(
+									image64,
+									count,
+									countryLower,
+									date
+								);
+								// if file is saved in aws s3 bucket add it to cache
+								if (etag) {
+									cache[`${date}${countryLower}`] = true;
+								}
+							} catch (error) {
+								console.log(error);
+							}
+						} 
+						let url = `${awsBucketBaseURL}${date}${countryLower}`;
+						bot.sendPhoto(msg.chat.id, url);
+						//Kill the pool when we're done with it, and exit the application
+						chartExporter.killPool();
+						// process.exit(1);
 					});
 				} catch (error) {
 					bot.sendMessage(
