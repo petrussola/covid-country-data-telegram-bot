@@ -21,13 +21,14 @@ const uploadFile = async (file, count, country, date) => {
 		Bucket: awsBucketName,
 		Key: `${date}${country}`,
 		Body: base64Data,
+		// ACL: 'public-read',
 		ContentEncoding: 'base64',
 		ContentType: `image/png`,
 		Metadata: { 'x-amz-meta-country': country, 'x-amz-meta-date': date },
 	};
 	try {
-		const { Etag } = await s3.putObject(params).promise();
-		etag = Etag;
+		const { ETag } = await s3.putObject(params).promise();
+		etag = ETag;
 		console.log(`File uploaded successfully. Etag: ${etag}`);
 	} catch (error) {
 		throw error;

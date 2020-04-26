@@ -20,7 +20,14 @@ const { countries } = require('./data/countries');
 const token = process.env.TELEGRAM_TOKEN;
 const baseApi = process.env.BASE_API;
 
+// aws bucket url
+const awsBucketBaseURL = process.env.AWS_BUCKET_URL;
+
+// initialize bot
 let bot;
+
+// cache of graphs
+let cache = {};
 
 // initialize the chart exporter
 chartExporter.initPool();
@@ -238,13 +245,16 @@ bot.on('message', async (msg) => {
 						// });
 						// --------------
 						// console.log(image64);
+
 						try {
-							const date = `${lastDay}${lastMonth}${lastYear}`
-							const etag = await uploadFile(image64, count, countryName, date);
+							const date = `${lastDay}${lastMonth}${lastYear}`;
+							const etag = await uploadFile(image64, count, countryName.toLowerCase(), date);
 							count++;
 							console.log(`***** count is: ${count} *******`);
-							console.log(etag)
-							bot.sendPhoto(msg.chat.id, location);
+							console.log(etag);
+							let url = `${awsBucketBaseURL}${date}${countryName.toLowerCase()}`;
+							console.log(url);
+							bot.sendPhoto(msg.chat.id, url);
 							//Kill the pool when we're done with it, and exit the application
 							chartExporter.killPool();
 							// process.exit(1);
