@@ -31,7 +31,6 @@ let cache = {};
 
 // initialize the chart exporter
 chartExporter.initPool();
-let count = 0;
 
 // if production env, we use webhooks
 // https://core.telegram.org/bots/api#setwebhook
@@ -65,27 +64,6 @@ bot.on('message', async (msg) => {
 			- Type <b>world</b> to get the latest global data`,
 			{ parse_mode: 'HTML' }
 		);
-		// test file
-	} else if (input === 'file') {
-		bot.sendPhoto(msg.chat.id, './bar.png');
-		// chartExporter.export(chartDetails, function (err, res) {
-		// 	console.log(res);
-		// 	//The export result is now in res.
-		// 	//If the output is not PDF or SVG, it will be base64 encoded (res.data).
-		// 	const image64 = res.data;
-		// 	//If the output is a PDF or SVG, it will contain a filename (res.filename).
-		// 	const outputFile = 'bar.png';
-
-		// 	fs.writeFileSync(outputFile, image64, 'base64', (err) => {
-		// 		if (err) {
-		// 			console.log(err);
-		// 		}
-		// 	});
-		// 	const filetest = `${__dirname}/bar.png`;
-		// 	//Kill the pool when we're done with it, and exit the application
-		// 	chartExporter.killPool();
-		// 	// process.exit(1);
-		// });
 	} else {
 		const countryCode = msg.text;
 		// world data
@@ -113,8 +91,10 @@ bot.on('message', async (msg) => {
 					].toLocaleString()} new].\n\nData source: Johns Hopkins University Center for Systems Science and Engineering.`,
 					{ parse_mode: 'HTML' }
 				);
-				console.log(globalData);
-			} catch (error) {}
+				// console.log(globalData);
+			} catch (error) {
+				console.log(error);
+			}
 		} else {
 			country = countries.filter((item) => {
 				return item['ISO2'] === countryCode.toUpperCase();
@@ -201,8 +181,6 @@ bot.on('message', async (msg) => {
 							}
 						}
 					}
-					console.log(dates);
-					console.log(newConfirmed);
 					// chart details
 					const chartDetails = {
 						type: 'png',
@@ -230,32 +208,16 @@ bot.on('message', async (msg) => {
 						},
 					};
 					chartExporter.export(chartDetails, async function (err, res) {
-						// console.log(res);
 						//The export result is now in res.
 						//If the output is not PDF or SVG, it will be base64 encoded (res.data).
 						const image64 = res.data;
-						//If the output is a PDF or SVG, it will contain a filename (res.filename).
-						// -----------------
-						// const outputFile = `${__dirname}/charts/graph${count}.png`;
-
-						// fs.writeFileSync(outputFile, image64, 'base64', (err) => {
-						// 	if (err) {
-						// 		console.log(err);
-						// 	}
-						// });
-						// --------------
-						// console.log(image64);
-
 						const date = `${lastYear}${lastMonth}${lastDay}`;
 						const countryLower = countryName.toLowerCase();
+						// check if country is in the cache. If it is there, meanse we have generated file in s3 before, so we don't need to do it again
 						if (!cache[`${date}${countryLower}`]) {
 							try {
-								const etag = await uploadFile(
-									image64,
-									count,
-									countryLower,
-									date
-								);
+								// aws s3 file upload helper
+								const etag = await uploadFile(image64, countryLower, date);
 								// if file is saved in aws s3 bucket add it to cache
 								if (etag) {
 									cache[`${date}${countryLower}`] = true;
@@ -263,7 +225,7 @@ bot.on('message', async (msg) => {
 							} catch (error) {
 								console.log(error);
 							}
-						} 
+						}
 						let url = `${awsBucketBaseURL}${date}${countryLower}`;
 						bot.sendPhoto(msg.chat.id, url);
 						//Kill the pool when we're done with it, and exit the application
