@@ -6,4 +6,4 @@ You can find this bot at t.me/covidalerts_bot
 Data source: Johns Hopkins University Center for Systems Science and Engineering
 API data source: https://covid19api.com/
 
-Let me know if you have any feedback or feature request!
+Let me know if you have any feedback or feature request!.
