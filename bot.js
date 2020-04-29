@@ -6,12 +6,10 @@ const fs = require('fs');
 
 // CHARTING
 const chartExporter = require('highcharts-export-server');
-// const Annotations = require('highcharts/modules/annotations');
-// const Highcharts = require('highcharts'),
-// 	HighchartsAnnotations = require('annotations')(Highcharts);
 
 // HELPERS
 const uploadFile = require('./config/aws');
+const logger = require('./config/logger');
 
 // data
 const { countries } = require('./data/countries');
@@ -51,7 +49,9 @@ console.log(`Bot started in the ${process.env.NODE_ENV} mode`);
 
 bot.on('message', async (msg) => {
 	console.log('########');
-	console.log(msg);
+	// console.log(msg);
+	// logger.log('info', process.env.NODE_ENV);
+	logger.log('info', `${msg.text}`);
 	console.log('########');
 	commands = ['/start', '/help'];
 	const input = msg.text;
