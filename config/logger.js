@@ -6,7 +6,6 @@ const WinstonCloudWatch = require('winston-cloudwatch');
 const logger = winston.createLogger({
 	level: 'info',
 	format: winston.format.json(),
-	transports: [new winston.transports.Console()],
 });
 
 if (process.env.NODE_ENV === 'development') {
@@ -17,9 +16,15 @@ if (process.env.NODE_ENV === 'development') {
 		awsSecretKey: process.env.AWS_SECRET_KEY,
 		awsRegion: process.env.AWS_REGION,
 		messageFormatter: ({ level, message, ...meta }) =>
-			`[${level}]\n Text: ${message}\n Language: ${meta.lang}\n MessageId: ${meta.messageId}\n IsBot: ${meta.isBot}]`,
+			`[${level}]\n Success: ${meta.success}\n ${
+				!meta.success ? `| Failure Message: ${meta.failureMessage}` : ''
+			}\n | Text: ${message}\n | UserLanguage: ${meta.lang}\n | MessageId: ${
+				meta.messageId
+			}\n | IsBot: ${meta.isBot}]`,
 	};
 	logger.add(new WinstonCloudWatch(cloudWatchConfig));
+} else {
+	logger.add(new winston.transports.Console());
 }
 
 module.exports = logger;

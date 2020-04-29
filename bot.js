@@ -48,14 +48,6 @@ if (process.env.NODE_ENV === 'production') {
 console.log(`Bot started in the ${process.env.NODE_ENV} mode`);
 
 bot.on('message', async (msg) => {
-	console.log('########');
-	console.log(msg);
-	logger.info(msg.text, {
-		messageId: msg.message_id,
-		isBot: msg.from.is_bot,
-		lang: msg.from.language_code,
-	});
-	console.log('########');
 	commands = ['/start', '/help'];
 	const input = msg.text;
 	// is user types /start or /help
@@ -104,6 +96,13 @@ bot.on('message', async (msg) => {
 			});
 			// if message sent does not match a country, return error message
 			if (country.length === 0) {
+				logger.info(msg.text, {
+					success: false,
+					failureMessage: 'Wrong ISO code',
+					messageId: msg.message_id,
+					isBot: msg.from.is_bot,
+					lang: msg.from.language_code,
+				});
 				bot.sendMessage(
 					msg.chat.id,
 					"The text you wrote doesn't seem to match an ISO country code. Please try another one."
@@ -167,6 +166,13 @@ bot.on('message', async (msg) => {
 						}${diffDeaths.toLocaleString()} new].\n\nData source: Johns Hopkins University Center for Systems Science and Engineering.`,
 						{ parse_mode: 'HTML' }
 					);
+					logger.info(msg.text, {
+						success: true,
+						failureMessage: '',
+						messageId: msg.message_id,
+						isBot: msg.from.is_bot,
+						lang: msg.from.language_code,
+					});
 					// charting
 					const dates = [];
 					const newConfirmed = [];
@@ -236,6 +242,13 @@ bot.on('message', async (msg) => {
 						// process.exit(1);
 					});
 				} catch (error) {
+					logger.info(msg.text, {
+						success: false,
+						failureMessage: 'After text message & before chart',
+						messageId: msg.message_id,
+						isBot: msg.from.is_bot,
+						lang: msg.from.language_code,
+					});
 					bot.sendMessage(
 						msg.chat.id,
 						'We could not fetch the data requested. Please try again.'
