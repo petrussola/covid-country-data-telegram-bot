@@ -8,7 +8,7 @@ const logger = winston.createLogger({
 	format: winston.format.json(),
 });
 
-if (process.env.NODE_ENV === 'development') {
+if (process.env.NODE_ENV === 'production') {
 	const cloudWatchConfig = {
 		logGroupName: process.env.CLOUDWATCH_GROUP_NAME,
 		logStreamName: process.env.CLOUDWATCH_STREAM_NAME,
@@ -17,10 +17,12 @@ if (process.env.NODE_ENV === 'development') {
 		awsRegion: process.env.AWS_REGION,
 		messageFormatter: ({ level, message, ...meta }) =>
 			`[${level}]\n Success: ${meta.success}\n ${
-				!meta.success ? `| Failure Message: ${meta.failureMessage}` : ''
+				!meta.success
+					? `| Failure Message: ${meta.failureMessage}`
+					: `| Success Message: ${meta.successMessage}`
 			}\n | Text: ${message}\n | UserLanguage: ${meta.lang}\n | MessageId: ${
 				meta.messageId
-			}\n | IsBot: ${meta.isBot}]`,
+			}\n | IsBot: ${meta.isBot}`,
 	};
 	logger.add(new WinstonCloudWatch(cloudWatchConfig));
 } else {
