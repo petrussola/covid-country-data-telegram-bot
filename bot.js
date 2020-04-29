@@ -49,9 +49,12 @@ console.log(`Bot started in the ${process.env.NODE_ENV} mode`);
 
 bot.on('message', async (msg) => {
 	console.log('########');
-	// console.log(msg);
-	// logger.log('info', process.env.NODE_ENV);
-	logger.log('info', `${msg.text}`);
+	console.log(msg);
+	logger.info(msg.text, {
+		messageId: msg.message_id,
+		isBot: msg.from.is_bot,
+		lang: msg.from.language_code,
+	});
 	console.log('########');
 	commands = ['/start', '/help'];
 	const input = msg.text;
