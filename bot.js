@@ -6,10 +6,12 @@ const fs = require('fs');
 
 // CHARTING
 const chartExporter = require('highcharts-export-server');
+// const Annotations = require('highcharts/modules/annotations');
+// const Highcharts = require('highcharts'),
+// 	HighchartsAnnotations = require('annotations')(Highcharts);
 
 // HELPERS
 const uploadFile = require('./config/aws');
-const logger = require('./config/logger');
 
 // data
 const { countries } = require('./data/countries');
@@ -37,14 +39,6 @@ if (process.env.NODE_ENV === 'production') {
 	bot = new TelegramBot(token);
 	bot.setWebHook(process.env.HEROKU_URL + bot.token);
 	console.log('**** BOT initiated ***** ');
-	logger.info('Bot started', {
-		success: true,
-		successMessage: '**** BOT initiated *****',
-		failureMessage: '',
-		messageId: null,
-		isBot: null,
-		lang: null,
-	});
 } else {
 	// otherwise, we use polling
 	// differences between webhooks and polling:
@@ -54,16 +48,11 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 console.log(`Bot started in the ${process.env.NODE_ENV} mode`);
-logger.info('Bot started', {
-	success: true,
-	successMessage: `Bot started in the ${process.env.NODE_ENV} mode`,
-	failureMessage: '',
-	messageId: null,
-	isBot: null,
-	lang: null,
-});
 
 bot.on('message', async (msg) => {
+	console.log('########');
+	console.log(msg);
+	console.log('########');
 	commands = ['/start', '/help'];
 	const input = msg.text;
 	// is user types /start or /help
@@ -102,15 +91,9 @@ bot.on('message', async (msg) => {
 					].toLocaleString()} new].\n\nData source: Johns Hopkins University Center for Systems Science and Engineering.`,
 					{ parse_mode: 'HTML' }
 				);
+				// console.log(globalData);
 			} catch (error) {
-				logger.info(msg.text, {
-					success: false,
-					successMessage: '',
-					failureMessage: `Telegram didn't deliver: ${error}`,
-					messageId: msg.message_id,
-					isBot: msg.from.is_bot,
-					lang: msg.from.language_code,
-				});
+				console.log(error);
 			}
 		} else {
 			country = countries.filter((item) => {
@@ -118,14 +101,6 @@ bot.on('message', async (msg) => {
 			});
 			// if message sent does not match a country, return error message
 			if (country.length === 0) {
-				logger.info(msg.text, {
-					success: false,
-					successMessage: '',
-					failureMessage: 'Wrong ISO code',
-					messageId: msg.message_id,
-					isBot: msg.from.is_bot,
-					lang: msg.from.language_code,
-				});
 				bot.sendMessage(
 					msg.chat.id,
 					"The text you wrote doesn't seem to match an ISO country code. Please try another one."
@@ -189,14 +164,6 @@ bot.on('message', async (msg) => {
 						}${diffDeaths.toLocaleString()} new].\n\nData source: Johns Hopkins University Center for Systems Science and Engineering.`,
 						{ parse_mode: 'HTML' }
 					);
-					logger.info(msg.text, {
-						success: true,
-						successMessage: `Text delivered`,
-						failureMessage: '',
-						messageId: msg.message_id,
-						isBot: msg.from.is_bot,
-						lang: msg.from.language_code,
-					});
 					// charting
 					const dates = [];
 					const newConfirmed = [];
@@ -249,70 +216,23 @@ bot.on('message', async (msg) => {
 						// check if country is in the cache. If it is there, meanse we have generated file in s3 before, so we don't need to do it again
 						if (!cache[`${date}${countryLower}`]) {
 							try {
-								logger.info(msg.text, {
-									success: true,
-									successMessage: `Chart not in cache. Attempting save in AWS`,
-									failureMessage: '',
-									messageId: msg.message_id,
-									isBot: msg.from.is_bot,
-									lang: msg.from.language_code,
-								});
 								// aws s3 file upload helper
 								const etag = await uploadFile(image64, countryLower, date);
 								// if file is saved in aws s3 bucket add it to cache
 								if (etag) {
-									logger.info(msg.text, {
-										success: true,
-										successMessage: `chart saved in AWS. Etag: ${etag}`,
-										failureMessage: '',
-										messageId: msg.message_id,
-										isBot: msg.from.is_bot,
-										lang: msg.from.language_code,
-									});
 									cache[`${date}${countryLower}`] = true;
-									logger.info(msg.text, {
-										success: true,
-										successMessage: 'Chart saved in cache',
-										failureMessage: '',
-										messageId: msg.message_id,
-										isBot: msg.from.is_bot,
-										lang: msg.from.language_code,
-									});
 								}
 							} catch (error) {
-								logger.info(msg.text, {
-									success: false,
-									successMessage: '',
-									failureMessage: 'When saving chart to AWS',
-									messageId: msg.message_id,
-									isBot: msg.from.is_bot,
-									lang: msg.from.language_code,
-								});
+								console.log(error);
 							}
 						}
 						let url = `${awsBucketBaseURL}${date}${countryLower}`;
 						bot.sendPhoto(msg.chat.id, url);
-						logger.info(msg.text, {
-							success: true,
-							successMessage: 'Chart delivered',
-							failureMessage: '',
-							messageId: msg.message_id,
-							isBot: msg.from.is_bot,
-							lang: msg.from.language_code,
-						});
 						//Kill the pool when we're done with it, and exit the application
 						chartExporter.killPool();
 						// process.exit(1);
 					});
 				} catch (error) {
-					logger.info(msg.text, {
-						success: false,
-						successMessage: '',
-						failureMessage: 'After text message & before chart',
-						messageId: msg.message_id,
-						isBot: msg.from.is_bot,
-						lang: msg.from.language_code,
-					});
 					bot.sendMessage(
 						msg.chat.id,
 						'We could not fetch the data requested. Please try again.'
