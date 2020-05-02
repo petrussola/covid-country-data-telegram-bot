@@ -73,15 +73,16 @@ bot.on('message', async (msg) => {
 			`Welcome!\n
 			- Type an ISO country code to get the latest COVID-19 official data i.e. Ireland => <b>ie</b>, France => <b>fr</b>, etc\n
 			- Type <b>world</b> to get the latest global data\n
-			- Type <b>/country</b> followed by the name of a country to find the ISO code. i.e. "<b>/country ireland</b>" will return "<b>IE</b>"`,
-			{ parse_mode: 'HTML' }
+			- Type <b>/country</b> followed by the name of a country to find the ISO code. i.e. "<b>/country ireland</b>" will return "<b>IE</b>"\n\nLike this bot? Share the link: t.me/covidalerts_bot`,
+			{ parse_mode: 'HTML', disable_web_page_preview: true }
 		);
 	} else if (input.includes('/country')) {
 		const arg = input.split('/country')[1].trim();
 		if (arg === '') {
 			bot.sendMessage(
 				msg.chat.id,
-				"You can use the '/country' to find the ISO code of a country. Type '/country' followed by the name of the country and I will return you the ISO code, so you can do your search.\nFor example: '/country ireland' will return 'ie'"
+				"You can use the '/country' to find the ISO code of a country. Type '/country' followed by the name of the country and I will return you the ISO code, so you can do your search.\nFor example: '/country ireland' will return 'ie'\nLike this bot? Share the link: t.me/covidalerts_bot",
+				{ disable_web_page_preview: true }
 			);
 		} else {
 			const country = countries.filter((item) => {
@@ -115,12 +116,12 @@ bot.on('message', async (msg) => {
 					);
 				}
 				for (i in names) {
-					if (i === "0") {
-						answer += names[i]
+					if (i === '0') {
+						answer += names[i];
 					} else if (i === (names.length - 1).toString()) {
-						answer += ` and ${names[i]}`
+						answer += ` and ${names[i]}`;
 					} else {
-						answer += `, ${names[i]}`
+						answer += `, ${names[i]}`;
 					}
 				}
 				bot.sendMessage(msg.chat.id, answer);
@@ -150,8 +151,8 @@ bot.on('message', async (msg) => {
 						'TotalDeaths'
 					].toLocaleString()} cases [${globalData[
 						'NewDeaths'
-					].toLocaleString()} new].\n\nData source: Johns Hopkins University Center for Systems Science and Engineering.`,
-					{ parse_mode: 'HTML' }
+					].toLocaleString()} new].\n\nData source: Johns Hopkins University Center for Systems Science and Engineering.\n\nLike this bot? Share the link: t.me/covidalerts_bot`,
+					{ parse_mode: 'HTML', disable_web_page_preview: true }
 				);
 			} catch (error) {
 				logger.info(msg.text, {
@@ -237,8 +238,8 @@ bot.on('message', async (msg) => {
 							lastDateIndex
 						]['Cases'].toLocaleString()} cases [${
 							diffDeaths > 0 ? '+' : '-'
-						}${diffDeaths.toLocaleString()} new].\n\nData source: Johns Hopkins University Center for Systems Science and Engineering.`,
-						{ parse_mode: 'HTML' }
+						}${diffDeaths.toLocaleString()} new].\n\nData source: Johns Hopkins University Center for Systems Science and Engineering.\n\nLike this bot? Share the link: t.me/covidalerts_bot`,
+						{ parse_mode: 'HTML', disable_web_page_preview: true }
 					);
 					logger.info(msg.text, {
 						success: true,
