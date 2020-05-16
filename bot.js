@@ -92,8 +92,8 @@ bot.on('message', async (msg) => {
 			if (country.length === 0) {
 				bot.sendMessage(
 					msg.chat.id,
-					`Hmm, <b>${arg}</b> doesn't seem to be a country name. Try again with another one.`,
-					{ parse_mode: 'HTML' }
+					`Hmm, <b>${arg}</b> doesn't seem to be a country name. Try again with another one.\n\nLike this bot? Share the link: t.me/covidalerts_bot`,
+					{ parse_mode: 'HTML', disable_web_page_preview: true }
 				);
 				// a single country was found containing the argument passed
 			} else if (country.length === 1) {
@@ -103,8 +103,10 @@ bot.on('message', async (msg) => {
 						country[0]['ISO2']
 					}</b>. You can now do your search by typing <b>${
 						country[0]['ISO2']
-					}</b> or <b>${country[0]['ISO2'].toLowerCase()}</b> in the bot.`,
-					{ parse_mode: 'HTML' }
+					}</b> or <b>${country[0][
+						'ISO2'
+					].toLowerCase()}</b> in the bot.\n\nLike this bot? Share the link: t.me/covidalerts_bot`,
+					{ parse_mode: 'HTML', disable_web_page_preview: true }
 				);
 				// more than one country was found containing the argument passed i.e. Korea
 			} else {
@@ -124,7 +126,11 @@ bot.on('message', async (msg) => {
 						answer += `, ${names[i]}`;
 					}
 				}
-				bot.sendMessage(msg.chat.id, answer);
+				bot.sendMessage(
+					msg.chat.id,
+					`${answer}\n\nLike this bot? Share the link: t.me/covidalerts_bot`,
+					{ parse_mode: 'HTML', disable_web_page_preview: true }
+				);
 			}
 		}
 	} else {
@@ -180,23 +186,25 @@ bot.on('message', async (msg) => {
 				});
 				bot.sendMessage(
 					msg.chat.id,
-					"The text you wrote doesn't seem to match an ISO country code. Please try another one."
+					'The text you wrote doesn\'t seem to match an ISO country code.\n\nType <b>/country</b> followed by the name of the country to find the ISO code. i.e. "/country france"\n\nLike this bot? Share the link: t.me/covidalerts_bot',
+					{ parse_mode: 'HTML', disable_web_page_preview: true }
 				);
 			} else {
+				countrySlug = country[0]['Slug'];
 				countryName = country[0]['Country'];
 				try {
 					// data from API
 					// https://documenter.getpostman.com/view/10808728/SzS8rjbc?version=latest#9739c95f-ef1d-489b-97a9-0a6dfe2f74d8
 					confirmed = await axios.get(
-						`${baseApi}total/country/${countryName}/status/confirmed`
+						`${baseApi}total/country/${countrySlug}/status/confirmed`
 					);
 					confirmedData = confirmed.data;
 					recovered = await axios.get(
-						`${baseApi}total/country/${countryName}/status/recovered`
+						`${baseApi}total/country/${countrySlug}/status/recovered`
 					);
 					recoveredData = recovered.data;
 					death = await axios.get(
-						`${baseApi}total/country/${countryName}/status/deaths`
+						`${baseApi}total/country/${countrySlug}/status/deaths`
 					);
 					deathData = death.data;
 					// last and before last available data index
@@ -367,7 +375,8 @@ bot.on('message', async (msg) => {
 					});
 					bot.sendMessage(
 						msg.chat.id,
-						'We could not fetch the data requested. Please try again.'
+						'We could not fetch the data requested. Please try again.\n\nLike this bot? Share the link: t.me/covidalerts_bot',
+						{ parse_mode: 'HTML', disable_web_page_preview: true }
 					);
 				}
 			}
