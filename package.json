@@ -7,7 +7,7 @@
     "aws-sdk": "^2.814.0",
     "axios": "^0.21.2",
     "dotenv": "^8.2.0",
-    "express": "^4.17.1",
+    "express": "^4.17.3",
     "highcharts-export-server": "^2.1.0",
     "node-telegram-bot-api": "^0.40.0",
     "winston": "^3.2.1",
