@@ -8,8 +8,8 @@
     "axios": "^0.21.2",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
-    "highcharts-export-server": "^2.1.0",
-    "node-telegram-bot-api": "^0.40.0",
+    "highcharts-export-server": "^3.1.1",
+    "node-telegram-bot-api": "^0.65.0",
     "winston": "^3.2.1",
     "winston-cloudwatch": "^6.1.1"
   },
